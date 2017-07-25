@@ -427,6 +427,15 @@ static void conn_recv(struct tls_conn *tc, struct mbuf *mb)
 }
 
 
+static unsigned timer_cb(SSL *s, unsigned timer_us)
+{
+	(void)s;
+	(void)timer_us;
+
+	return 500000;  /* 500 milliseconds */
+}
+
+
 static int conn_alloc(struct tls_conn **ptc, struct tls *tls,
 		      struct dtls_sock *sock, const struct sa *peer,
 		      dtls_estab_h *estabh, dtls_recv_h *recvh,
@@ -486,6 +495,8 @@ static int conn_alloc(struct tls_conn **ptc, struct tls *tls,
 	SSL_set_bio(tc->ssl, tc->sbio_in, tc->sbio_out);
 
 	SSL_set_read_ahead(tc->ssl, 1);
+
+	DTLS_set_timer_cb(tc->ssl, timer_cb);
 
  out:
 	if (err)
